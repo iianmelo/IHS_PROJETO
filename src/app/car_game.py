@@ -1,7 +1,7 @@
 import pygame, sys, random
 from pygame.math import Vector2
 import assets
-from controlls import button_controlls
+from controls import button_controlls
 
 class BULLET:
     def __init__(self, car_pos_x):
