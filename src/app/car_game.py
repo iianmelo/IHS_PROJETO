@@ -134,9 +134,6 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Meu jogo")
 clock = pygame.time.Clock() # para garantir que o jogo não mude de velocidade de pc para pc
 
-SCREEN_UPDATE = pygame.USEREVENT
-pygame.time.set_timer(SCREEN_UPDATE, 16)
-
 main_game = MAIN() 
 
 while True: # loop game
@@ -144,8 +141,6 @@ while True: # loop game
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             main_game.game_over() #garante que vai fechar o jogo
-        if event.type == SCREEN_UPDATE:
-            main_game.update()
         if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     main_game.bullet_vector.append(BULLET(main_game.car.position.x))
@@ -166,6 +161,8 @@ while True: # loop game
         main_game.car.position.y += 5
         main_game.car.car_rect.y += 5
 
+
+    main_game.update()
     screen.blit(assets.background_correct_size, (0,0)) 
     main_game.draw_elements()
     pygame.display.flip()
