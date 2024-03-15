@@ -35,7 +35,7 @@ def right_display_write(number):
 
 def left_display_write(num1, num2):
     fd = os.open("/dev/mydev", os.O_RDWR)
-    ioctl(fd, WR_R_DISPLAY)
+    ioctl(fd, WR_L_DISPLAY)
     #primeiro digito do num1
     result = numbers[(num2 % 10)] << 8
     #segundo digito do num1
