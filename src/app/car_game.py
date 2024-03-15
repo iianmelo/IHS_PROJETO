@@ -1,7 +1,9 @@
 import pygame, sys, random
 from pygame.math import Vector2
 import assets
-import controls
+import controls.button_controls
+import controls.display_control as display
+import controls.led_controls as ledc
 
 class BULLET:
     def __init__(self, car_pos_x):
@@ -74,6 +76,8 @@ class MAIN():
 
     def __init__(self):
         self.car = CAR()
+        self.delay = 0
+        self.score = 0
         #inciciando vetor de zumbis
         self.obst_vector = []
         #iniciando vetor de balas
@@ -100,6 +104,7 @@ class MAIN():
     def update(self):
         self.check_collision()
         self.car.direction = 0
+        self.delay = max(0,self.delay-1)
         for obst in self.obst_vector:
             obst.move_obstaculo()
         for bullet in self.bullet_vector:
@@ -125,6 +130,7 @@ class MAIN():
                     self.bullet_vector.remove(bullet) 
                     #print(obst.life)
                     if obst.life <= 0:
+                        self.score += 1
                         obst.life = 3
                         obst.randomize()
 
@@ -139,28 +145,27 @@ main_game = MAIN()
 
 while True: # loop game
     # desenhar todos o elementos
+    leds = [0,1,1,0]
+    ledc.set_green_leds(leds)
+    display.right_display_write(main_game.score)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             main_game.game_over() #garante que vai fechar o jogo
-        if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    main_game.bullet_vector.append(BULLET(main_game.car.position.x))
 
-    press = pygame.key.get_pressed()
-    if controls.button_controls.RD_PBUTTONS() == 13 and main_game.car.position.x > 130:
+    if controls.button_controls.read_button() == 1 and main_game.car.position.x > 130:
         main_game.car.direction = -1
         main_game.car.position.x -= 10
         main_game.car.car_rect.x -=10  
-    if press[pygame.K_RIGHT] and main_game.car.position.x < 407:
+    if controls.button_controls.read_button() == 4 and main_game.car.position.x < 407:
         main_game.car.direction = 1
         main_game.car.position.x += 10
         main_game.car.car_rect.x += 10 
-    if press[pygame.K_UP]:
-        main_game.car.position.y -= 5
-        main_game.car.car_rect.y -= 5 
-    if press[pygame.K_DOWN]:
-        main_game.car.position.y += 5
-        main_game.car.car_rect.y += 5
+    if controls.button_controls.read_button() == 2 and main_game.delay == 0:
+        main_game.bullet_vector.append(BULLET(main_game.car.position.x))
+        main_game.delay = 5
+    if controls.button_controls.read_button() == 3:
+        #superpoder
+        print('superpoder')
 
 
     main_game.update()
