@@ -18,6 +18,7 @@ numbers = [hex0, hex1, hex2, hex3, hex4, hex5, hex6, hex7, hex8, hex9]
 #display direito vai ser usado para um numero de 4 digitos
 
 def right_display_write(number):
+    if(number > 9999 or number < 0) return
     fd = os.open("/dev/mydev", os.O_RDWR)
     ioctl(fd, WR_R_DISPLAY)
     #primeiro digito
@@ -34,15 +35,16 @@ def right_display_write(number):
 #display esquerdo vai ser usado para dois numeros de 2 digitos
 
 def left_display_write(num1, num2):
+    if((num1 > 99 or num1 < 0 or num2 > 99 or num2 < 0) return
     fd = os.open("/dev/mydev", os.O_RDWR)
     ioctl(fd, WR_L_DISPLAY)
-    #primeiro digito do num1
-    result = numbers[int(num2 / 10)]
-    #segundo digito do num1
-    result = (result << 8) | result = numbers[(num2 % 10)]
     #primeiro digito do num2
-    result = numbers[int((num1 / 10)]
+    result = numbers[int(num2 / 10)]
     #segundo digito do num2
+    result = (result << 8) | result = numbers[(num2 % 10)]
+    #primeiro digito do num1
+    result = (result << 8) | numbers[int((num1 / 10)]
+    #segundo digito do num1
     result = (result << 8) | numbers[int((num1 % 10))]
     retval = os.write(fd, result.to_bytes(4, 'little'))
     os.close(fd)
