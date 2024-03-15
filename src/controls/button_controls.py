@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, sys
+import os
 from fcntl import ioctl
 
 # ioctl commands defined at the pci driver
@@ -7,6 +7,7 @@ RD_SWITCHES   = 24929
 RD_PBUTTONS   = 24930
 
 fd = os.open("/dev/mydev", os.O_RDWR)
+
 def read_button ():
     ioctl(fd, RD_PBUTTONS)
     button = os.read(fd, 4)

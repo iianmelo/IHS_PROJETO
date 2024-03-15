@@ -1,7 +1,7 @@
 import pygame, sys, random
 from pygame.math import Vector2
 import assets
-from controls import button_controlls
+import controls
 
 class BULLET:
     def __init__(self, car_pos_x):
@@ -147,7 +147,7 @@ while True: # loop game
                     main_game.bullet_vector.append(BULLET(main_game.car.position.x))
 
     press = pygame.key.get_pressed()
-    if button_controlls.RD_PBUTTONS() == 13 and main_game.car.position.x > 130:
+    if controls.button_controls.RD_PBUTTONS() == 13 and main_game.car.position.x > 130:
         main_game.car.direction = -1
         main_game.car.position.x -= 10
         main_game.car.car_rect.x -=10  
@@ -168,3 +168,5 @@ while True: # loop game
     main_game.draw_elements()
     pygame.display.flip()
     clock.tick(60) # garante que o jogo rode a 60 fps
+
+
