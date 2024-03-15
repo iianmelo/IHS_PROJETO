@@ -1,6 +1,7 @@
 import pygame, sys, random
 from pygame.math import Vector2
 import assets
+from controlls import button_controlls
 
 class BULLET:
     def __init__(self, car_pos_x):
@@ -146,7 +147,7 @@ while True: # loop game
                     main_game.bullet_vector.append(BULLET(main_game.car.position.x))
 
     press = pygame.key.get_pressed()
-    if press[pygame.K_LEFT] and main_game.car.position.x > 130:
+    if button_controlls.RD_PBUTTONS() == 13 and main_game.car.position.x > 130:
         main_game.car.direction = -1
         main_game.car.position.x -= 10
         main_game.car.car_rect.x -=10  
