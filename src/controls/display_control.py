@@ -41,7 +41,7 @@ def left_display_write(num1, num2):
     #primeiro digito do num2
     result = numbers[int(num2 / 10)]
     #segundo digito do num2
-    result = (result << 8) | result = numbers[(num2 % 10)]
+    result = (result << 8) | numbers[(num2 % 10)]
     #primeiro digito do num1
     result = (result << 8) | numbers[int((num1 / 10)]
     #segundo digito do num1
