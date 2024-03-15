@@ -21,7 +21,7 @@ def right_display_write(number):
     fd = os.open("/dev/mydev", os.O_RDWR)
     ioctl(fd, WR_R_DISPLAY)
     #primeiro digito
-    result = numbers[(number % 10)] << 7
+    result = numbers[(number % 10)]
     #segundo digito
     result = (result << 7) | numbers[int((number % 100) / 10)]
     #terceiro digito
@@ -37,7 +37,7 @@ def left_display_write(num1, num2):
     fd = os.open("/dev/mydev", os.O_RDWR)
     ioctl(fd, WR_L_DISPLAY)
     #primeiro digito do num1
-    result = numbers[(num2 % 10)] << 8
+    result = numbers[(num2 % 10)]
     #segundo digito do num1
     result = (result << 7) | numbers[int((num2 % 100) / 10)]
     #terceiro digito do num2
