@@ -155,9 +155,11 @@ class MAIN():
         for obst in self.obst_vector:
             if((self.car.car_rect).colliderect(obst.zombie_rect)):
                 obst.randomize() 
+                obst.life = 3
                 self.car.life -= 1     
             elif(obst.pos.y >= screen_height):
                 obst.randomize()
+                obst.life = 3
                 self.car.life -= 1 
             for bullet in self.bullet_vector:
                 if((bullet.bullet_rect).colliderect(obst.zombie_rect)):
