@@ -5,6 +5,29 @@ import controls.button_controls
 import controls.display_controls as display
 import controls.led_controls as ledc
 
+def red_led_pattern(num, total):
+    if num > total: num = total
+    if num < 0: num = 0
+    arr = []
+    for i in range(0,num):
+        arr.append(1)
+    for i in range (num, total):
+        arr.append(0)
+    arr = arr + arr[::-1]
+    return arr
+#padrao do led verde ignora o led verde 9 que fica no meio da placa
+def green_led_pattern(num, total):
+    if num > total: num = total
+    if num < 0: num = 0
+    arr = []
+    for i in range(0,num):
+        arr.append(1)
+    for i in range (num, total):
+        arr.append(0)
+    arr = arr + arr[::-1]
+    arr = [0] + arr
+    return arr
+
 class BULLET:
     def __init__(self, car_pos_x):
         #posicoes iniciais da bala
@@ -26,7 +49,7 @@ class CAR:
         #posicoes iniciais do carro
         self.car_pos_x = screen.get_width() / 1.9
         self.car_pos_y = 570
-        self.car.life = 3
+        self.life = 4
         #vetor da posicao do carro
         self.position = Vector2(self.car_pos_x, self.car_pos_y)
         #direcao do carro (para fazer a angulacao da imagem) #0=meio, 1= direita e -1 = esquerda
@@ -45,7 +68,7 @@ class CAR:
 class OBSTACULO:
     def __init__(self):
         #criando as vidas do zumbi
-        self.life = 3
+        self.life = 2
         #gerando um x aleatorio para a posicao do zumbi 
         self.randomize()
         #retangulo para checar colisao do zumbi
@@ -79,6 +102,7 @@ class MAIN():
         self.car = CAR()
         self.delay = 0
         self.score = 0
+        self.ammo = 4
         #inciciando vetor de zumbis
         self.obst_vector = []
         #iniciando vetor de balas
@@ -155,7 +179,10 @@ main_game = MAIN()
 
 while True: # loop game
     # desenhar todos o elementos
+    ledc.set_red_leds(red_led_pattern(main_game.round-1, 9))
+    ledc.set_green_leds(green_led_pattern(main_game.ammo, 4))
     display.right_display_write(main_game.score)
+    display.left_display_write(main_game.car.life,main_game.ammo)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             main_game.game_over() #garante que vai fechar o jogo
@@ -168,12 +195,17 @@ while True: # loop game
         main_game.car.direction = 1
         main_game.car.position.x += 10
         main_game.car.car_rect.x += 10 
-    if controls.button_controls.read_button() == 2 and main_game.delay == 0:
-        main_game.bullet_vector.append(BULLET(main_game.car.position.x))
-        main_game.delay = 5
+    if controls.button_controls.read_button() == 2:
+        #tiro
+        if main_game.ammo > 0 and main_game.delay == 0:
+            main_game.bullet_vector.append(BULLET(main_game.car.position.x))
+            main_game.delay = 5
+            main_game.ammo -= 1
     if controls.button_controls.read_button() == 3:
-        #superpoder
-        print('superpoder')
+        #reload
+        if main_game.ammo == 0:
+            main_game.ammo = 4
+            main_game.delay = 20
 
 
     main_game.update()
