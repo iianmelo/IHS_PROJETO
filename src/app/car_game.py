@@ -2,7 +2,7 @@ import pygame, sys, random
 from pygame.math import Vector2
 import assets
 import controls.button_controls
-import controls.display_control as display
+import controls.display_controls as display
 import controls.led_controls as ledc
 
 class BULLET:
@@ -26,6 +26,7 @@ class CAR:
         #posicoes iniciais do carro
         self.car_pos_x = screen.get_width() / 1.9
         self.car_pos_y = 570
+        self.car.life = 3
         #vetor da posicao do carro
         self.position = Vector2(self.car_pos_x, self.car_pos_y)
         #direcao do carro (para fazer a angulacao da imagem) #0=meio, 1= direita e -1 = esquerda
@@ -82,8 +83,9 @@ class MAIN():
         self.obst_vector = []
         #iniciando vetor de balas
         self.bullet_vector = []
-        self.obst_vector.append(OBSTACULO()) #OBSTACULO INICIAL P/ TESTES 
-        self.obst_vector.append(OBSTACULO())
+        #definindo numero de zumbis por round
+        self.round = 0
+        self.predefined_round = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5]
 
     #funcao para desenhar elementos
     def draw_elements(self):
@@ -92,8 +94,6 @@ class MAIN():
             #desenhando cada obstaculo
             obst.draw_obstaculo()
             #removendo o obstaculo caso passe do final
-            if(obst.pos.y>=650):
-                self.obst_vector.remove(obst)
         for bullet in self.bullet_vector:
             #desenhando cada bala
             bullet.draw_bullet()
@@ -110,20 +110,31 @@ class MAIN():
         for bullet in self.bullet_vector:
             #movendo cada bala
             bullet.position.y -= bullet.velocity
+        if not self.obst_vector:
+            if(self.round == 10): self.game_win()
+            #tem que ser desse jeito pros zumbis randomizarem corretamente
+            for i in range(0,self.predefined_round[self.round]):
+                self.obst_vector += [OBSTACULO()]
+            self.round += 1
+        if(self.car.life <= 0):
+            self.game_over()
         
     def game_over(self):
         pygame.quit()
         sys.exit()
-    
+
+    def game_win(self):
+        pygame.quit()
+        sys.exit()
 
     def check_collision(self):
         for obst in self.obst_vector:
             if((self.car.car_rect).colliderect(obst.zombie_rect)):
-                obst.life -= 1      
-                #print(obst.life)
-                if obst.life <= 0:
-                    obst.life = 3
-                    obst.randomize()
+                obst.randomize() 
+                self.car.life -= 1     
+            elif(obst.pos.y >= screen_height):
+                obst.randomize()
+                self.car.life -= 1 
             for bullet in self.bullet_vector:
                 if((bullet.bullet_rect).colliderect(obst.zombie_rect)):
                     obst.life -= 1
@@ -131,8 +142,7 @@ class MAIN():
                     #print(obst.life)
                     if obst.life <= 0:
                         self.score += 1
-                        obst.life = 3
-                        obst.randomize()
+                        self.obst_vector.remove(obst)
 
 pygame.init()
 screen_height = 700
@@ -145,8 +155,6 @@ main_game = MAIN()
 
 while True: # loop game
     # desenhar todos o elementos
-    leds = [0,1,1,0]
-    ledc.set_green_leds(leds)
     display.right_display_write(main_game.score)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
