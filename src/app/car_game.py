@@ -49,7 +49,7 @@ class CAR:
         #posicoes iniciais do carro
         self.car_pos_x = screen.get_width() / 1.9
         self.car_pos_y = 570
-        self.life = 4
+        self.life = 20
         #vetor da posicao do carro
         self.position = Vector2(self.car_pos_x, self.car_pos_y)
         #direcao do carro (para fazer a angulacao da imagem) #0=meio, 1= direita e -1 = esquerda
@@ -135,12 +135,15 @@ class MAIN():
             #movendo cada bala
             bullet.position.y -= bullet.velocity
         if not self.obst_vector:
-            if(self.round == 10): self.game_win()
+            if(self.round == 10):
+                display.right_display_write(30)
+                self.game_win()
             #tem que ser desse jeito pros zumbis randomizarem corretamente
             for i in range(0,self.predefined_round[self.round]):
                 self.obst_vector += [OBSTACULO()]
             self.round += 1
         if(self.car.life <= 0):
+            display.left_display_write(0,main_game.ammo)
             self.game_over()
         
     def game_over(self):
@@ -156,7 +159,7 @@ class MAIN():
             if((self.car.car_rect).colliderect(obst.zombie_rect)):
                 obst.randomize() 
                 obst.life = 3
-                self.car.life -= 1     
+                self.car.life -= 2     
             elif(obst.pos.y >= screen_height):
                 obst.randomize()
                 obst.life = 3
@@ -207,7 +210,7 @@ while True: # loop game
         #reload
         if main_game.ammo == 0:
             main_game.ammo = 4
-            main_game.delay = 20
+            main_game.delay = 5
 
 
     main_game.update()
