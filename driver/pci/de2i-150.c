@@ -1,41 +1,45 @@
-#include <linux/init.h>
-#include <linux/module.h>	/* THIS_MODULE macro */
-#include <linux/fs.h>		/* VFS related */
-#include <linux/ioctl.h>	/* ioctl syscall */
-#include <linux/errno.h>	/* error codes */
-#include <linux/types.h>	/* dev_t number */
-#include <linux/cdev.h>		/* char device registration */
-#include <linux/uaccess.h>	/* copy_*_user functions */
-#include <linux/pci.h>		/* pci funcs and types */
+#include <linux/init.h> 	//Contém as macros de inicialização do kernel.
+#include <linux/module.h>	/* THIS_MODULE macro - Fornece as macros essenciais para a definição de módulos do kernel.*/
+#include <linux/fs.h>		/* VFS related - Contém as estruturas e funções relacionadas ao subsistema de sistema de arquivos.*/
+#include <linux/ioctl.h>	/* ioctl syscall - Define as constantes para o uso da syscall ioctl.*/
+#include <linux/errno.h>	/* error codes - Define os códigos de erro padrão do kernel.*/
+#include <linux/types.h>	/* dev_t number - Define tipos de dados comuns do kernel.*/
+#include <linux/cdev.h>		/* char device registration - Fornece as estruturas e funções necessárias para registrar um dispositivo de caractere no kernel.*/
+#include <linux/uaccess.h>	/* copy_*_user functions - Contém as funções para copiar dados entre o espaço do usuário e o espaço do kernel de forma segura.*/
+#include <linux/pci.h>		/* pci funcs and types - Fornece estruturas e funções relacionadas à comunicação com dispositivos PCI.*/
 
 #include "../../include/ioctl_cmds.h"
 
 /* meta information */
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("mfbsouza");
-MODULE_DESCRIPTION("simple pci driver for DE2i-150 dev board");
+MODULE_LICENSE("GPL"); //Define a licença do módulo como GPL.
+MODULE_AUTHOR("mfbsouza"); //Define o autor do módulo.
+MODULE_DESCRIPTION("simple pci driver for DE2i-150 dev board"); //Descreve o propósito do módulo.
 
 /* driver constants */
-
-#define DRIVER_NAME      "my_driver"
-#define FILE_NAME        "mydev"
+//Nome do driver.
+#define DRIVER_NAME      "my_driver" 
+//Nome do dispositivo de caractere associado ao driver.
+#define FILE_NAME        "mydev" 
+ //Classe do driver.
 #define DRIVER_CLASS     "MyModuleClass"
-#define MY_PCI_VENDOR_ID  0x1172
-#define MY_PCI_DEVICE_ID  0x0004
+//ID do fornecedor do dispositivo PCI.
+#define MY_PCI_VENDOR_ID  0x1172 
+//ID do dispositivo PCI.
+#define MY_PCI_DEVICE_ID  0x0004 
 
 /* lkm entry and exit functions */
 
-static int  __init my_init (void);
-static void __exit my_exit (void);
+static int  __init my_init (void); // Função de inicialização do módulo.
+static void __exit my_exit (void); // Função de saída do módulo.
 
 /* char device system calls */
 
-static int	my_open   (struct inode*, struct file*);
-static int 	my_close  (struct inode*, struct file*);
-static ssize_t 	my_read   (struct file*, char __user*, size_t, loff_t*);
-static ssize_t 	my_write  (struct file*, const char __user*, size_t, loff_t*);
-static long int	my_ioctl  (struct file*, unsigned int, unsigned long);
+static int	my_open   (struct inode*, struct file*); //Geralmente, é usada para inicializar o estado do dispositivo ou reservar recursos associados a ele.
+static int 	my_close  (struct inode*, struct file*); //É usada para limpar e liberar os recursos associados ao dispositivo que foram alocados durante a abertura.
+static ssize_t 	my_read   (struct file*, char __user*, size_t, loff_t*); //responsável por ler os dados do dispositivo e copiá-los para o espaço de usuário.
+static ssize_t 	my_write  (struct file*, const char __user*, size_t, loff_t*); //responsável por receber os dados do espaço de usuário e escrevê-los no dispositivo.
+static long int	my_ioctl  (struct file*, unsigned int, unsigned long); // As chamadas ioctl são usadas para operações específicas do dispositivo que não se enquadram nas operações de leitura e gravação padrão.
 
 /* pci functions */
 
@@ -44,14 +48,16 @@ static void __exit my_pci_remove (struct pci_dev *dev);
 
 /* pci ids which this driver supports */
 
+//Contém um único elemento que especifica o par de identificadores de fornecedor e dispositivo PCI suportados pelo driver.
 static struct pci_device_id pci_ids[] = {
 	{PCI_DEVICE(MY_PCI_VENDOR_ID, MY_PCI_DEVICE_ID), },
 	{0, }
 };
-MODULE_DEVICE_TABLE(pci, pci_ids);
+MODULE_DEVICE_TABLE(pci, pci_ids); //Esta macro declara a tabela de dispositivos do módulo, o que permite que o kernel saiba quais dispositivos este módulo de driver pode lidar.
 
 /* device file operations */
 
+// define as operações que podem ser realizadas no dispositivo.(ponteiros)
 static struct file_operations fops = {
 	.owner = THIS_MODULE,
 	.read = my_read,
@@ -63,6 +69,7 @@ static struct file_operations fops = {
 
 /* pci driver operations */
 
+//Esta estrutura representa o driver PCI. 
 static struct pci_driver pci_ops = {
 	.name = DRIVER_NAME,
 	.id_table = pci_ids,
@@ -72,9 +79,9 @@ static struct pci_driver pci_ops = {
 
 /* variables for char device registration to kernel */
 
-static dev_t my_device_nbr;
-static struct class* my_class;
-static struct cdev my_device;
+static dev_t my_device_nbr; //Armazena o número de dispositivo alocado pelo kernel.
+static struct class* my_class; //Representa a classe de dispositivo criada.
+static struct cdev my_device; //Representa o dispositivo de caractere que está sendo registrado.
 
 /* --- device data --- */
 /* PCI BARs mapped to virtual space */
