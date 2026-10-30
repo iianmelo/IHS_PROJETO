@@ -1,4 +1,41 @@
 # Makefile by Matheus Souza (github.com/mfbsouza)
+# O jogo em si e Python. O alvo padrao confere a sintaxe e compila os exemplos em C.
+# make run abre o jogo. Sem a placa DE2i-150 ele usa o teclado.
+
+.DEFAULT_GOAL := check
+
+PYTHON := python3
+APPDIR := src/app
+
+.PHONY: check run examples driver
+
+check:
+	$(PYTHON) -m py_compile \
+		$(APPDIR)/car_game.py \
+		$(APPDIR)/assets.py \
+		$(APPDIR)/controls/board.py \
+		$(APPDIR)/controls/button_controls.py \
+		$(APPDIR)/controls/display_controls.py \
+		$(APPDIR)/controls/led_controls.py
+	@echo "python ok. para jogar: make run"
+
+run:
+	@$(PYTHON) -c "import pygame" || { echo "falta o pygame. no Debian/Ubuntu: sudo apt install python3-pygame"; exit 1; }
+	cd $(APPDIR) && $(PYTHON) -u car_game.py
+
+examples:
+	@mkdir -p target
+	gcc -Wall -I include -o target/app-pci exemples/c/app-pci.c
+	gcc -Wall -I include -o target/app-char exemples/c/app-char.c
+	@echo "binarios em target/. eles abrem /dev/mydev e precisam da placa."
+
+driver:
+	@if [ ! -d "/lib/modules/$$(uname -r)/build" ]; then \
+		echo "sem headers do kernel $$(uname -r). o modulo PCI nao compila nesta maquina."; \
+		exit 1; \
+	fi
+	$(MAKE) -C driver/pci
+	$(MAKE) -C driver/char
 
 # project name
 PROJECT  := app
@@ -101,7 +138,9 @@ endif
 
 # target for ELF file
 $(BINDIR)/$(PROJECT): $(OBJS)
-ifeq ($(VERBOSE),1)
+ifeq ($(strip $(OBJS)),)
+	@echo "sem fontes C/C++/ASM em src/. o jogo e o alvo 'make run'."
+else ifeq ($(VERBOSE),1)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
 else
 	@echo -n "[LD] \t./$@\n"
@@ -110,7 +149,9 @@ endif
 
 # target for disassembly and sections header info
 $(BUILDDIR)/$(PROJECT).lst: $(BINDIR)/$(PROJECT)
-ifeq ($(VERBOSE),1)
+ifeq ($(strip $(OBJS)),)
+	@true
+else ifeq ($(VERBOSE),1)
 	$(OD) -h -S $< > $@
 else
 	@echo -n "[OD] \t./$@\n"
