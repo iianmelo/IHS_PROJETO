@@ -24,6 +24,12 @@ O carro foi para a esquerda e atirou. A munição no display esquerdo e nos LEDs
 
 ![Terminal com a compilação e o log da simulação](docs/prints/terminal.png)
 
+## Rodando na placa
+
+O jogo rodando na DE2i-150: os displays de 7 segmentos e os LEDs acompanham a partida.
+
+![O jogo rodando na DE2i-150](docs/prints/placa-funcionando.jpg)
+
 ## Como funciona
 
 O loop do jogo está em `src/app/car_game.py`. A cada quadro ele:
