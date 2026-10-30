@@ -5,6 +5,8 @@
 #include <linux/types.h>	/* dev_t number */
 #include <linux/cdev.h>		/* char device registration */
 #include <linux/uaccess.h>	/* copy_*_user functions */
+#include <linux/version.h>
+#include <linux/err.h>
 
 /* meta information */
 
@@ -71,7 +73,12 @@ static int __init my_init(void)
 
 	/* 2. create class : appears at /sys/class */
 
-	if ((my_class = class_create(THIS_MODULE, DRIVER_CLASS)) == NULL) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+	my_class = class_create(DRIVER_CLASS);
+#else
+	my_class = class_create(THIS_MODULE, DRIVER_CLASS);
+#endif
+	if (IS_ERR_OR_NULL(my_class)) {
 		printk("my_driver: device class count not be created!\n");
 		goto ClassError;
 	}

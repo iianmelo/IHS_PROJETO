@@ -7,6 +7,8 @@
 #include <linux/cdev.h>		/* char device registration - Fornece as estruturas e funções necessárias para registrar um dispositivo de caractere no kernel.*/
 #include <linux/uaccess.h>	/* copy_*_user functions - Contém as funções para copiar dados entre o espaço do usuário e o espaço do kernel de forma segura.*/
 #include <linux/pci.h>		/* pci funcs and types - Fornece estruturas e funções relacionadas à comunicação com dispositivos PCI.*/
+#include <linux/version.h>
+#include <linux/err.h>
 
 #include "../../include/ioctl_cmds.h"
 
@@ -132,7 +134,12 @@ static int __init my_init(void)
 	printk("my_driver: device number %d was registered!\n", MAJOR(my_device_nbr));
 
 	/* 2. create class : appears at /sys/class */
-	if ((my_class = class_create(THIS_MODULE, DRIVER_CLASS)) == NULL) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+	my_class = class_create(DRIVER_CLASS);
+#else
+	my_class = class_create(THIS_MODULE, DRIVER_CLASS);
+#endif
+	if (IS_ERR_OR_NULL(my_class)) {
 		printk("my_driver: device class count not be created!\n");
 		goto ClassError;
 	}

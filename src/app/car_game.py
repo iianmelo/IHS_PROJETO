@@ -1,6 +1,7 @@
 import pygame, sys, random
 from pygame.math import Vector2
 import assets
+import controls.board as board
 import controls.button_controls
 import controls.display_controls as display
 import controls.led_controls as ledc
@@ -119,11 +120,7 @@ class MAIN():
             obst.draw_obstaculo()
             #removendo o obstaculo caso passe do final
         for bullet in self.bullet_vector:
-            #desenhando cada bala
             bullet.draw_bullet()
-            #removendo a bala caso passe do final
-            if(bullet.position.y <= 0):
-                self.bullet_vector.remove(bullet)
         
     def update(self):
         self.check_collision()
@@ -134,6 +131,7 @@ class MAIN():
         for bullet in self.bullet_vector:
             #movendo cada bala
             bullet.position.y -= bullet.velocity
+        self.bullet_vector = [b for b in self.bullet_vector if b.position.y > 0]
         if not self.obst_vector:
             if(self.round == 10):
                 display.right_display_write(30)
@@ -155,28 +153,40 @@ class MAIN():
         sys.exit()
 
     def check_collision(self):
+        dead_obst = []
+        dead_bullets = []
         for obst in self.obst_vector:
-            if((self.car.car_rect).colliderect(obst.zombie_rect)):
-                obst.randomize() 
-                obst.life = 3
-                self.car.life -= 2     
-            elif(obst.pos.y >= screen_height):
+            if (self.car.car_rect).colliderect(obst.zombie_rect):
                 obst.randomize()
                 obst.life = 3
-                self.car.life -= 1 
-            for bullet in self.bullet_vector:
-                if((bullet.bullet_rect).colliderect(obst.zombie_rect)):
-                    obst.life -= 1
-                    self.bullet_vector.remove(bullet) 
-                    #print(obst.life)
-                    if obst.life <= 0:
-                        self.score += 1
-                        self.obst_vector.remove(obst)
+                self.car.life -= 2
+            elif obst.pos.y >= screen_height:
+                obst.randomize()
+                obst.life = 3
+                self.car.life -= 1
+            else:
+                for bullet in self.bullet_vector:
+                    if bullet in dead_bullets:
+                        continue
+                    if (bullet.bullet_rect).colliderect(obst.zombie_rect):
+                        obst.life -= 1
+                        dead_bullets.append(bullet)
+                        if obst.life <= 0:
+                            self.score += 1
+                            dead_obst.append(obst)
+                        break
+        for bullet in dead_bullets:
+            if bullet in self.bullet_vector:
+                self.bullet_vector.remove(bullet)
+        for obst in dead_obst:
+            if obst in self.obst_vector:
+                self.obst_vector.remove(obst)
 
 pygame.init()
 screen_height = 700
 screen_width = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
+panel_height = 96 if board.MOCK else 0
+screen = pygame.display.set_mode((screen_width, screen_height + panel_height))
 pygame.display.set_caption("Meu jogo")
 clock = pygame.time.Clock() # para garantir que o jogo não mude de velocidade de pc para pc
 
@@ -191,6 +201,8 @@ while True: # loop game
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             main_game.game_over() #garante que vai fechar o jogo
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            main_game.game_over()
 
     if controls.button_controls.read_button() == 1 and main_game.car.position.x > 130:
         main_game.car.direction = -1
@@ -214,8 +226,10 @@ while True: # loop game
 
 
     main_game.update()
-    screen.blit(assets.background_correct_size, (0,0)) 
+    screen.blit(assets.background_correct_size, (0,0))
     main_game.draw_elements()
+    if board.MOCK:
+        board.draw_overlay(screen, screen_height)
     pygame.display.flip()
     clock.tick(60) # garante que o jogo rode a 60 fps
 

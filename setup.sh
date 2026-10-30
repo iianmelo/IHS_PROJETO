@@ -3,23 +3,25 @@
 GREEN='\033[0;32m'
 CLEAR='\033[0m'
 
-echo -e "$GREEN BUILDING APP $CLEAR"
-make
+echo -e "$GREEN CONFERINDO O JOGO $CLEAR"
+make check
 
-echo -e "$GREEN BUILDING DRIVER $CLEAR"
-cd driver/pci
-make
-echo -e "$GREEN REMOVING OLD DRIVERS $CLEAR"
-sudo rmmod de2i_150
-echo -e "$GREEN INSERTING DRIVER TO KERNEL $CLEAR"
-sudo insmod de2i-150.ko
-cd ../..
+echo -e "$GREEN COMPILANDO EXEMPLOS EM C $CLEAR"
+make examples
 
-echo -e "$GREEN CHANGING DEVICE NODE PERMISSIONS $CLEAR"
-sudo chmod 666 /dev/mydev
+echo -e "$GREEN DRIVER PCI $CLEAR"
+if [ -d "/lib/modules/$(uname -r)/build" ]; then
+    make -C driver/pci
+    make -C driver/char
+else
+    echo "headers do kernel $(uname -r) ausentes. o .ko nao sai nesta maquina."
+fi
 
-echo -e "$GREEN DONE! $CLEAR"
-echo ""
-echo -e "$GREEN IN ORDER TO RUN THE APPLICATION RUN: $CLEAR"
-echo -e "$GREEN\t ./app/build/release/app $CLEAR"
-
+if lspci -d 1172:0004 >/dev/null 2>&1; then
+    echo -e "$GREEN PLACA DE2i-150 PRESENTE $CLEAR"
+    echo "para carregar o modulo: sudo insmod driver/pci/de2i-150.ko && sudo chmod 666 /dev/mydev"
+else
+    echo -e "$GREEN PLACA DE2i-150 AUSENTE $CLEAR"
+    echo "o jogo abre em simulacao, com o teclado no lugar dos botoes."
+    echo "comando: make run"
+fi
